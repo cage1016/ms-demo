@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: add
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: add
+  template:
+    metadata:
+      labels:
+        app: add
+    spec:
+      containers:
+        - name: add
+          image: index.docker.io/cage1016/ms-sample-add
+          env:
+            - name: QS_GRPC_PORT
+              value: "10021"
+            - name: QS_HTTP_PORT
+              value: "10020"
+            - name: QS_LOG_LEVEL
+              value: "info"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: add
+spec:
+  selector:
+    app: add
+  ports:
+    - port: 80
+      name: http
+      targetPort: 10020
+    - port: 8000
+      name: grpc
+      targetPort: 10021
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: add-external
+  labels:
+    app: add
+spec:
+  type: LoadBalancer
+  selector:
+    app: add
+  ports:
+  - port: 8180
+    name: http
+    targetPort: 10020
+  - port: 8181
+    name: grpc
+    targetPort: 10021

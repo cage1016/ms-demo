@@ -1,0 +1,22 @@
+apiVersion: skaffold/v2beta5
+kind: Config
+build:
+  artifacts:
+    - image: index.docker.io/cage1016/ms-sample-add
+      buildpacks:
+        builder: "gcr.io/buildpacks/builder:v1"
+        env:
+          - GOOGLE_BUILDABLE=cmd/add/main.go
+    - image: index.docker.io/cage1016/ms-sample-tictac
+      buildpacks:
+        builder: "gcr.io/buildpacks/builder:v1"
+        env:
+          - GOOGLE_BUILDABLE=cmd/tictac/main.go
+  tagPolicy:
+      sha256: {}
+  local:
+    push: true
+deploy:
+  kubectl:
+    manifests:
+    - ./deployments/kubernetes-manifests/*.yaml

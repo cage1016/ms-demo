@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package pb;
+
+// The Tictac service definition.
+service Tictac {
+  rpc Tic(TicRequest) returns (TicResponse);
+  rpc Tac(TacRequest) returns (TacResponse);
+}
+
+message TicRequest {
+
+}
+
+message TicResponse {
+  string err = 1;
+}
+
+message TacRequest {
+
+}
+
+message TacResponse {
+  int64 res = 1;
+  string err = 2;
+}
