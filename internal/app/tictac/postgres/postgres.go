@@ -20,7 +20,7 @@ func New(db *sqlx.DB, log log.Logger) model.TicTacRespository {
 }
 
 func (cr tictacRespository) Add(ctx context.Context) (err error) {
-	_, err = cr.db.ExecContext(ctx, "update tictac set value=value +1 where value > 0;")
+	_, err = cr.db.ExecContext(ctx, "update tictac set value=value +1 where value > 0")
 	if err != nil {
 		level.Error(cr.log).Log("method", "add", "err", err)
 	}
@@ -28,7 +28,7 @@ func (cr tictacRespository) Add(ctx context.Context) (err error) {
 }
 
 func (cr tictacRespository) Get(ctx context.Context) (res int64, err error) {
-	err = cr.db.GetContext(ctx, &res, "select * from tictac;")
+	err = cr.db.GetContext(ctx, &res, "select * from tictac")
 	if err != nil {
 		level.Error(cr.log).Log("method", "Get", "err", err)
 	}

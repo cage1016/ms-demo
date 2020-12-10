@@ -3,6 +3,7 @@ module github.com/cage1016/ms-sample
 go 1.14
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-kit/kit v0.10.0
 	github.com/go-zoo/bone v1.3.0
