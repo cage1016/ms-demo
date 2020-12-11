@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -30,6 +31,9 @@ func (cr tictacRespository) Add(ctx context.Context) (err error) {
 func (cr tictacRespository) Get(ctx context.Context) (res int64, err error) {
 	err = cr.db.GetContext(ctx, &res, "select * from tictac")
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
 		level.Error(cr.log).Log("method", "Get", "err", err)
 	}
 	return
