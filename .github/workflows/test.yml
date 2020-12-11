@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         go-version: [1.14.x]
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
@@ -30,4 +30,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the stack
-        run: docker-compose -f docker-compose.test.yaml up
+        run: docker-compose -f docker-compose.test.yaml up -d
