@@ -31,3 +31,9 @@ ifndef HAVE_GO_BINDATA
 else
 	go generate ./...
 endif
+
+test:
+	go test -v -race -cover -coverprofile cover.out ./...
+
+.PHONY: generate test add gadd tic tac a b c d
+
