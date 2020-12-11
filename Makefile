@@ -1,3 +1,5 @@
+.PHONY: generate test add gadd tic tac a b c d
+
 add:
 	curl -X POST localhost:8180/sum -d '{"a": 1, "b":1}'
 
@@ -32,8 +34,11 @@ else
 	go generate ./...
 endif
 
+## test: run unit test
 test:
-	go test -v -race -cover -coverprofile cover.out ./...
+	# DEBUG=true bash -c "go test -v github.com/qeek-dev/retailbase/<package-name> -run ..."
+	go test -v -race -cover -coverprofile unit_cover.out ./...
 
-.PHONY: generate test add gadd tic tac a b c d
-
+## integration: run integration test
+integration:
+	go test -v -race -tags=integration -coverprofile integration_cover.out ./...
