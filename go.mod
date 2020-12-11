@@ -15,5 +15,7 @@ require (
 	github.com/openzipkin/zipkin-go v0.2.3
 	github.com/rs/cors v1.7.0
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
+	github.com/stretchr/testify v1.4.0
 	google.golang.org/grpc v1.32.0
+	gotest.tools v2.2.0+incompatible
 )

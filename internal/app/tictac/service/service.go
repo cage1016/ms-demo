@@ -13,6 +13,7 @@ type Middleware func(TictacService) TictacService
 // Service describes a service that adds things together
 // Implement yor service methods methods.
 // e.x: Foo(ctx context.Context, s string)(rs string, err error)
+//go:generate mockgen -destination ../../../../internal/mocks/app/tictac/service/tictacservice.go -package=automocks . TictacService
 type TictacService interface {
 	// [method=post,expose=true]
 	Tic(ctx context.Context) (err error)
