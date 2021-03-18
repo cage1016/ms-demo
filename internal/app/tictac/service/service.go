@@ -24,12 +24,12 @@ type TictacService interface {
 // the concrete implementation of service interface
 type stubTictacService struct {
 	logger log.Logger
-	repo   model.TicTacRespository
+	repo   model.TictacRespository
 }
 
 // New return a new instance of the service.
 // If you want to add service middleware this is the place to put them.
-func New(repo model.TicTacRespository, logger log.Logger) (s TictacService) {
+func New(repo model.TictacRespository, logger log.Logger) (s TictacService) {
 	var svc TictacService
 	{
 		svc = &stubTictacService{logger: logger, repo: repo}
@@ -40,10 +40,10 @@ func New(repo model.TicTacRespository, logger log.Logger) (s TictacService) {
 
 // Implement the business logic of Tic
 func (ti *stubTictacService) Tic(ctx context.Context) (err error) {
-	return ti.repo.Add(ctx)
+	return ti.repo.Tic(ctx)
 }
 
 // Implement the business logic of Tac
 func (ti *stubTictacService) Tac(ctx context.Context) (res int64, err error) {
-	return ti.repo.Get(ctx)
+	return ti.repo.Tac(ctx)
 }

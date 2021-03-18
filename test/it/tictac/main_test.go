@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/go-kit/kit/log"
-	"github.com/jmoiron/sqlx"
 	"github.com/opentracing/opentracing-go"
 	"github.com/openzipkin/zipkin-go"
+	"gorm.io/gorm"
 
 	"github.com/cage1016/ms-sample/internal/app/tictac/endpoints"
 	"github.com/cage1016/ms-sample/internal/app/tictac/postgres"
@@ -40,14 +40,14 @@ const (
 var a *Application
 
 type Application struct {
-	DB      *sqlx.DB
+	DB      *gorm.DB
 	handler http.Handler
 }
 
-func Truncate(dbc *sqlx.DB) error {
+func Truncate(dbc *gorm.DB) error {
 	stmt := "TRUNCATE TABLE tictac;"
 
-	if _, err := dbc.Exec(stmt); err != nil {
+	if err := dbc.Raw(stmt).Error; err != nil {
 		return errors.Wrap(errors.New("truncate test database tables"), err)
 	}
 
@@ -76,7 +76,6 @@ func testMain(m *testing.M) int {
 		logger.Log("err", err)
 		return 1
 	}
-	defer db.Close()
 
 	zkt, _ := zipkin.NewTracer(nil, zipkin.WithNoopTracer(true))
 	tracer := opentracing.GlobalTracer()

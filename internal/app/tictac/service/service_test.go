@@ -18,7 +18,7 @@ import (
 
 func Test_Tic(t *testing.T) {
 	type fields struct {
-		repo *automocks.MockTicTacRespository
+		repo *automocks.MockTictacRespository
 	}
 	type args struct {
 		justNice bool
@@ -34,7 +34,7 @@ func Test_Tic(t *testing.T) {
 			name: "tic should return nil",
 			prepare: func(f *fields) {
 				gomock.InOrder(
-					f.repo.EXPECT().Add(context.Background()).Return(nil),
+					f.repo.EXPECT().Tic(context.Background()).Return(nil),
 				)
 			},
 			wantErr: false,
@@ -47,7 +47,7 @@ func Test_Tic(t *testing.T) {
 			defer ctrl.Finish()
 
 			f := fields{
-				repo: automocks.NewMockTicTacRespository(ctrl),
+				repo: automocks.NewMockTictacRespository(ctrl),
 			}
 			if tt.prepare != nil {
 				tt.prepare(&f)
@@ -68,7 +68,7 @@ func Test_Tic(t *testing.T) {
 
 func Test_Tac(t *testing.T) {
 	type fields struct {
-		repo *automocks.MockTicTacRespository
+		repo *automocks.MockTictacRespository
 	}
 	type args struct {
 	}
@@ -84,7 +84,7 @@ func Test_Tac(t *testing.T) {
 			name: "tac should return 2",
 			prepare: func(f *fields) {
 				gomock.InOrder(
-					f.repo.EXPECT().Get(context.Background()).Return(int64(2), nil),
+					f.repo.EXPECT().Tac(context.Background()).Return(int64(2), nil),
 				)
 			},
 			wantErr: false,
@@ -100,7 +100,7 @@ func Test_Tac(t *testing.T) {
 			defer ctrl.Finish()
 
 			f := fields{
-				repo: automocks.NewMockTicTacRespository(ctrl),
+				repo: automocks.NewMockTictacRespository(ctrl),
 			}
 			if tt.prepare != nil {
 				tt.prepare(&f)

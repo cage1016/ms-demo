@@ -5,16 +5,18 @@ package postgres_test
 import (
 	"context"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-kit/kit/log"
-	"github.com/jmoiron/sqlx"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
-	"github.com/cage1016/ms-sample/internal/app/tictac/postgres"
+	psql "github.com/cage1016/ms-sample/internal/app/tictac/postgres"
 )
 
-func Test_Add(t *testing.T) {
+func Test_Tic(t *testing.T) {
 	type fields struct {
 		mock sqlmock.Sqlmock
 	}
@@ -25,9 +27,9 @@ func Test_Add(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Add func",
+			name: "Tic func",
 			prepare: func(f *fields) {
-				f.mock.ExpectExec("update tictac").WithArgs().WillReturnResult(sqlmock.NewResult(1, 1))
+				f.mock.ExpectExec(regexp.QuoteMeta("UPDATE \"tictacs\" SET \"value\"=value+1 WHERE 1=1")).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			wantErr: false,
 		},
@@ -48,16 +50,17 @@ func Test_Add(t *testing.T) {
 				tt.prepare(&f)
 			}
 
-			repo := postgres.New(sqlx.NewDb(db, "postgres"), log.NewLogfmtLogger(os.Stderr))
+			gdb, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+			repo := psql.New(gdb, log.NewLogfmtLogger(os.Stderr))
 
-			if err := repo.Add(context.Background()); (err != nil) != tt.wantErr {
+			if err := repo.Tic(context.Background()); (err != nil) != tt.wantErr {
 				t.Errorf("Add(ctx context.Context) error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func Test_Get(t *testing.T) {
+func Test_Tac(t *testing.T) {
 	type fields struct {
 		mock sqlmock.Sqlmock
 	}
@@ -71,7 +74,7 @@ func Test_Get(t *testing.T) {
 			name: "Get func",
 			prepare: func(f *fields) {
 				rows := sqlmock.NewRows([]string{"value"}).AddRow(2)
-				f.mock.ExpectQuery("^select (.+) from tictac").WillReturnRows(rows)
+				f.mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM \"tictacs\"")).WillReturnRows(rows).WillReturnError(nil)
 			},
 			wantErr: false,
 		},
@@ -92,9 +95,10 @@ func Test_Get(t *testing.T) {
 				tt.prepare(&f)
 			}
 
-			repo := postgres.New(sqlx.NewDb(db, "postgres"), log.NewLogfmtLogger(os.Stderr))
+			gdb, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
+			repo := psql.New(gdb, log.NewLogfmtLogger(os.Stderr))
 
-			if res, err := repo.Get(context.Background()); (err != nil) != tt.wantErr {
+			if res, err := repo.Tac(context.Background()); (err != nil) != tt.wantErr {
 				t.Errorf("Get(ctx context.Context) error = %v, wantErr %v", err, tt.wantErr)
 			} else {
 				t.Log(res)

@@ -3,38 +3,50 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"sync"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gorm"
 
 	"github.com/cage1016/ms-sample/internal/app/tictac/model"
 )
 
 type tictacRespository struct {
-	db  *sqlx.DB
+	mu  sync.RWMutex
 	log log.Logger
+	db  *gorm.DB
 }
 
-func New(db *sqlx.DB, log log.Logger) model.TicTacRespository {
-	return &tictacRespository{db, log}
+func New(db *gorm.DB, logger log.Logger) model.TictacRespository {
+	return &tictacRespository{
+		mu:  sync.RWMutex{},
+		log: logger,
+		db:  db,
+	}
 }
 
-func (cr tictacRespository) Add(ctx context.Context) (err error) {
-	_, err = cr.db.ExecContext(ctx, "update tictac set value=value +1 where value > 0")
+func (cr *tictacRespository) Tic(ctx context.Context) (err error) {
+	cr.mu.Lock()
+	defer cr.mu.Unlock()
+
+	err = cr.db.WithContext(ctx).Model(&model.Tictac{}).Where("1=1").Update("value", gorm.Expr("value+1")).Error
 	if err != nil {
-		level.Error(cr.log).Log("method", "add", "err", err)
+		level.Error(cr.log).Log("method", "tic", "err", err)
 	}
 	return
 }
 
-func (cr tictacRespository) Get(ctx context.Context) (res int64, err error) {
-	err = cr.db.GetContext(ctx, &res, "select * from tictac")
+func (cr *tictacRespository) Tac(ctx context.Context) (res int64, err error) {
+	cr.mu.Lock()
+	defer cr.mu.Unlock()
+
+	err = cr.db.WithContext(ctx).Model(&model.Tictac{}).First(&res).Error
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return 0, nil
 		}
-		level.Error(cr.log).Log("method", "Get", "err", err)
+		level.Error(cr.log).Log("method", "tac", "err", err)
 	}
 	return
 }
