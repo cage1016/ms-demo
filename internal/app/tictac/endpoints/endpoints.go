@@ -27,7 +27,9 @@ func New(svc service.TictacService, logger log.Logger, otTracer stdopentracing.T
 		method := "tic"
 		ticEndpoint = MakeTicEndpoint(svc)
 		ticEndpoint = opentracing.TraceServer(otTracer, method)(ticEndpoint)
-		ticEndpoint = zipkin.TraceEndpoint(zipkinTracer, method)(ticEndpoint)
+		if zipkinTracer != nil {
+			ticEndpoint = zipkin.TraceEndpoint(zipkinTracer, method)(ticEndpoint)
+		}
 		ticEndpoint = LoggingMiddleware(log.With(logger, "method", method))(ticEndpoint)
 		ep.TicEndpoint = ticEndpoint
 	}
@@ -37,7 +39,9 @@ func New(svc service.TictacService, logger log.Logger, otTracer stdopentracing.T
 		method := "tac"
 		tacEndpoint = MakeTacEndpoint(svc)
 		tacEndpoint = opentracing.TraceServer(otTracer, method)(tacEndpoint)
-		tacEndpoint = zipkin.TraceEndpoint(zipkinTracer, method)(tacEndpoint)
+		if zipkinTracer != nil {
+			tacEndpoint = zipkin.TraceEndpoint(zipkinTracer, method)(tacEndpoint)
+		}
 		tacEndpoint = LoggingMiddleware(log.With(logger, "method", method))(tacEndpoint)
 		ep.TacEndpoint = tacEndpoint
 	}

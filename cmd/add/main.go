@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -13,9 +15,12 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/opentracing/opentracing-go"
 	stdopentracing "github.com/opentracing/opentracing-go"
 	"github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/reporter/http"
+	"github.com/uber/jaeger-client-go"
+	jconfig "github.com/uber/jaeger-client-go/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
@@ -29,6 +34,7 @@ import (
 )
 
 const (
+	defJaegerURL   = ""
 	defZipkinV2URL = ""
 	defServiceName = "add"
 	defLogLevel    = "error"
@@ -36,6 +42,7 @@ const (
 	defHTTPPort    = "8180"
 	defGRPCPort    = "8181"
 
+	envJaegerURL   = "QS_JAEGER_URL"
 	envZipkinV2URL = "QS_ZIPKIN_V2_URL"
 	envServiceName = "QS_SERVICE_NAME"
 	envLogLevel    = "QS_LOG_LEVEL"
@@ -51,6 +58,7 @@ type config struct {
 	httpPort    string
 	grpcPort    string
 	zipkinV2URL string
+	jaegerURL   string
 }
 
 // Env reads specified environment variable. If no value has been found,
@@ -77,7 +85,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	tracer := initOpentracing()
+	tracer, closer := initJaeger(cfg.serviceName, cfg.jaegerURL, logger)
+	defer closer.Close()
+
 	zipkinTracer := initZipkin(cfg.serviceName, cfg.httpPort, cfg.zipkinV2URL, logger)
 	service := NewServer(logger)
 	endpoints := endpoints.New(service, logger, tracer, zipkinTracer)
@@ -107,6 +117,7 @@ func loadConfig(logger log.Logger) (cfg config) {
 	cfg.httpPort = env(envHTTPPort, defHTTPPort)
 	cfg.grpcPort = env(envGRPCPort, defGRPCPort)
 	cfg.zipkinV2URL = env(envZipkinV2URL, defZipkinV2URL)
+	cfg.jaegerURL = env(envJaegerURL, defJaegerURL)
 	return cfg
 }
 
@@ -115,27 +126,49 @@ func NewServer(logger log.Logger) service.AddService {
 	return service
 }
 
-func initOpentracing() stdopentracing.Tracer {
-	return stdopentracing.GlobalTracer()
+func initJaeger(svcName, url string, logger log.Logger) (opentracing.Tracer, io.Closer) {
+	if url == "" {
+		return opentracing.NoopTracer{}, ioutil.NopCloser(nil)
+	}
+
+	tracer, closer, err := jconfig.Configuration{
+		ServiceName: svcName,
+		Sampler: &jconfig.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jconfig.ReporterConfig{
+			LocalAgentHostPort: url,
+			LogSpans:           true,
+		},
+	}.NewTracer()
+	if err != nil {
+		level.Error(logger).Log("msg", fmt.Sprintf("Failed to init Jaeger: %s", err))
+		os.Exit(1)
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+	return tracer, closer
 }
 
 func initZipkin(serviceName, httpPort, zipkinV2URL string, logger log.Logger) (zipkinTracer *zipkin.Tracer) {
-	var (
-		err           error
-		hostPort      = fmt.Sprintf("localhost:%s", httpPort)
-		useNoopTracer = (zipkinV2URL == "")
-		reporter      = zipkinhttp.NewReporter(zipkinV2URL)
-	)
-	zEP, _ := zipkin.NewEndpoint(serviceName, hostPort)
-	zipkinTracer, err = zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zEP), zipkin.WithNoopTracer(useNoopTracer))
-	if err != nil {
-		logger.Log("err", err)
-		os.Exit(1)
+	if zipkinV2URL != "" {
+		var (
+			err           error
+			hostPort      = fmt.Sprintf("localhost:%s", httpPort)
+			useNoopTracer = (zipkinV2URL == "")
+			reporter      = zipkinhttp.NewReporter(zipkinV2URL)
+		)
+		zEP, _ := zipkin.NewEndpoint(serviceName, hostPort)
+		zipkinTracer, err = zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zEP), zipkin.WithNoopTracer(useNoopTracer))
+		if err != nil {
+			logger.Log("err", err)
+			os.Exit(1)
+		}
+		if !useNoopTracer {
+			logger.Log("tracer", "Zipkin", "type", "Native", "URL", zipkinV2URL)
+		}
 	}
-	if !useNoopTracer {
-		logger.Log("tracer", "Zipkin", "type", "Native", "URL", zipkinV2URL)
-	}
-
 	return
 }
 

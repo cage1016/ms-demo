@@ -26,7 +26,9 @@ func New(svc service.AddService, logger log.Logger, otTracer stdopentracing.Trac
 		method := "sum"
 		sumEndpoint = MakeSumEndpoint(svc)
 		sumEndpoint = opentracing.TraceServer(otTracer, method)(sumEndpoint)
-		sumEndpoint = zipkin.TraceEndpoint(zipkinTracer, method)(sumEndpoint)
+		if zipkinTracer != nil {
+			sumEndpoint = zipkin.TraceEndpoint(zipkinTracer, method)(sumEndpoint)
+		}
 		sumEndpoint = LoggingMiddleware(log.With(logger, "method", method))(sumEndpoint)
 		ep.SumEndpoint = sumEndpoint
 	}

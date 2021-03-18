@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -13,24 +15,29 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
-	"github.com/jmoiron/sqlx"
+	"github.com/opentracing/opentracing-go"
 	stdopentracing "github.com/opentracing/opentracing-go"
 	"github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/reporter/http"
+	"github.com/uber/jaeger-client-go"
+	jconfig "github.com/uber/jaeger-client-go/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"gorm.io/gorm"
 
 	"github.com/cage1016/ms-sample/internal/app/tictac/endpoints"
 	"github.com/cage1016/ms-sample/internal/app/tictac/postgres"
 	"github.com/cage1016/ms-sample/internal/app/tictac/service"
 	transportsgrpc "github.com/cage1016/ms-sample/internal/app/tictac/transports/grpc"
 	transportshttp "github.com/cage1016/ms-sample/internal/app/tictac/transports/http"
+	"github.com/cage1016/ms-sample/internal/pkg/logconv"
 	pb "github.com/cage1016/ms-sample/pb/tictac"
 )
 
 const (
+	defJaegerURL     = ""
 	defZipkinV2URL   = ""
 	defServiceName   = "tictac"
 	defLogLevel      = "error"
@@ -47,6 +54,7 @@ const (
 	defDBSSLKey      = ""
 	defDBSSLRootCert = ""
 
+	envJaegerURL     = "QS_JAEGER_URL"
 	envZipkinV2URL   = "QS_ZIPKIN_V2_URL"
 	envServiceName   = "QS_SERVICE_NAME"
 	envLogLevel      = "QS_LOG_LEVEL"
@@ -72,6 +80,7 @@ type config struct {
 	httpPort    string
 	grpcPort    string
 	zipkinV2URL string
+	jaegerURL   string
 }
 
 // Env reads specified environment variable. If no value has been found,
@@ -99,9 +108,13 @@ func main() {
 	defer cancel()
 
 	db := connectToDB(cfg.dbConfig, logger)
-	defer db.Close()
+	if cfg.logLevel == logconv.Debug {
+		db = db.Debug()
+	}
 
-	tracer := initOpentracing()
+	tracer, closer := initJaeger(cfg.serviceName, cfg.jaegerURL, logger)
+	defer closer.Close()
+
 	zipkinTracer := initZipkin(cfg.serviceName, cfg.httpPort, cfg.zipkinV2URL, logger)
 	service := NewServer(db, logger)
 	endpoints := endpoints.New(service, logger, tracer, zipkinTracer)
@@ -131,6 +144,7 @@ func loadConfig(logger log.Logger) (cfg config) {
 	cfg.httpPort = env(envHTTPPort, defHTTPPort)
 	cfg.grpcPort = env(envGRPCPort, defGRPCPort)
 	cfg.zipkinV2URL = env(envZipkinV2URL, defZipkinV2URL)
+	cfg.jaegerURL = env(envJaegerURL, defJaegerURL)
 	cfg.dbConfig = postgres.Config{
 		Host:        env(envDBHost, defDBHost),
 		Port:        env(envDBPort, defDBPort),
@@ -145,8 +159,7 @@ func loadConfig(logger log.Logger) (cfg config) {
 	return cfg
 }
 
-func connectToDB(dbConfig postgres.Config, logger log.Logger) *sqlx.DB {
-	logger.Log("dbConfig", fmt.Sprintf("%v", dbConfig))
+func connectToDB(dbConfig postgres.Config, logger log.Logger) *gorm.DB {
 	db, err := postgres.Connect(dbConfig)
 	if err != nil {
 		logger.Log("err", err)
@@ -155,14 +168,35 @@ func connectToDB(dbConfig postgres.Config, logger log.Logger) *sqlx.DB {
 	return db
 }
 
-func NewServer(db *sqlx.DB, logger log.Logger) service.TictacService {
+func NewServer(db *gorm.DB, logger log.Logger) service.TictacService {
 	repo := postgres.New(db, logger)
 	service := service.New(repo, logger)
 	return service
 }
 
-func initOpentracing() stdopentracing.Tracer {
-	return stdopentracing.GlobalTracer()
+func initJaeger(svcName, url string, logger log.Logger) (opentracing.Tracer, io.Closer) {
+	if url == "" {
+		return opentracing.NoopTracer{}, ioutil.NopCloser(nil)
+	}
+
+	tracer, closer, err := jconfig.Configuration{
+		ServiceName: svcName,
+		Sampler: &jconfig.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jconfig.ReporterConfig{
+			LocalAgentHostPort: url,
+			LogSpans:           true,
+		},
+	}.NewTracer()
+	if err != nil {
+		level.Error(logger).Log("msg", fmt.Sprintf("Failed to init Jaeger: %s", err))
+		os.Exit(1)
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+	return tracer, closer
 }
 
 func initZipkin(serviceName, httpPort, zipkinV2URL string, logger log.Logger) (zipkinTracer *zipkin.Tracer) {
