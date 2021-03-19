@@ -7,11 +7,19 @@ build:
         builder: "gcr.io/buildpacks/builder:v1"
         env:
           - GOOGLE_BUILDABLE=cmd/add/main.go
+        dependencies:
+          paths:
+            - cmd/add/main.go
+            - internal/**
     - image: index.docker.io/cage1016/ms-sample-tictac
       buildpacks:
         builder: "gcr.io/buildpacks/builder:v1"
         env:
           - GOOGLE_BUILDABLE=cmd/tictac/main.go
+        dependencies:
+          paths:
+            - cmd/tictac/main.go
+            - internal/**          
   tagPolicy:
       sha256: {}
   local:

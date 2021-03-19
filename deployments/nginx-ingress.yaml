@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: http-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:        
+        - path: /api/v1/add(/|$)(.*)
+          backend:
+            serviceName: add
+            servicePort: 80
+        - path: /api/v1/tictac(/|$)(.*)
+          backend:
+            serviceName: tictac
+            servicePort: 80
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: tictac-grpc-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+spec:
+  tls:
+    - hosts:
+      - tictac.localhost
+      secretName: tictac-tls-secret
+  rules:
+  - host: tictac.localhost
+    http:
+      paths:
+        - path: /
+          backend:
+            serviceName: tictac
+            servicePort: 8000
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: add-grpc-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+spec:
+  tls:
+    - hosts:
+      - add.localhost
+      secretName: add-tls-secret
+  rules:
+  - host: add.localhost
+    http:
+      paths:
+        - path: /
+          backend:
+            serviceName: add
+            servicePort: 8000

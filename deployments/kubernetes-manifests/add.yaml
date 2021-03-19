@@ -22,6 +22,9 @@ spec:
               value: "10020"
             - name: QS_LOG_LEVEL
               value: "info"
+          resources:
+            requests:
+              cpu: 0
 ---
 kind: Service
 apiVersion: v1

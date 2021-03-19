@@ -1,5 +1,7 @@
 # gokit microservice demo
 
+[![run tests](https://github.com/cage1016/ms-demo/actions/workflows/test.yml/badge.svg)](https://github.com/cage1016/ms-demo/actions/workflows/test.yml)
+
 | Service | Description           |
 | ------- | --------------------- |
 | add     | Expose Sum method     |
@@ -16,55 +18,163 @@
 - **[Skaffold](https://skaffold.dev):** Application
   is deployed to Kubernetes with a single command using Skaffold.
 - **[go-kit/kit](https://github.com/go-kit/kit):** Go kit is a programming toolkit for building microservices (or elegant monoliths) in Go. We solve common problems in distributed systems and application architecture so you can focus on delivering business value.
+- **[kubernetes/ingress-nginx](https://github.com/kubernetes/ingress-nginx/)**: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 
 ## Install
 
-1. Run `skaffold run` (first time will be slow)
-2. Set the `ADD_HTTP_LB_URL/ADD_GRPC_LB_URL` & `TICTAC_HTTP_LB_URL/TICTAC_GRPC_LB_URL` environment variable in your shell to the public IP/port of the Kubernetes loadBalancer
-    ```sh
-    export ADD_HTTP_LB_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
-    export ADD_GRPC_LB_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
-    export ADD_LB_HOST=$(kubectl get service add-external -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-    export ADD_HTTP_LB_URL=$ADD_LB_HOST:$ADD_HTTP_LB_PORT
-    export ADD_GRPC_LB_URL=$ADD_LB_HOST:$ADD_GRPC_LB_PORT
-    echo $ADD_HTTP_LB_URL
-    echo $ADD_GRPC_LB_URL
+this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](.#nginx-ingress) and [Istio](.#istio) three ways to access
 
-    export TICTAC_HTTP_LB_PORT=$(kubectl get service tictac-external -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
-    export TICTAC_GRPC_LB_PORT=$(kubectl get service tictac-external -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
-    export TICTAC_LB_HOST=$(kubectl get service tictac-external -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-    export TICTAC_HTTP_LB_URL=$TICTAC_LB_HOST:$TICTAC_HTTP_LB_PORT
-    export TICTAC_GRPC_LB_URL=$TICTAC_LB_HOST:$TICTAC_GRPC_LB_PORT
-    echo $TICTAC_HTTP_LB_URL
-    echo $TICTAC_GRPC_LB_URL
-    ```
-3. Access by command
-    - sum method
+### Kubernetes Service
+
+1. Run ms-demo kubernetes cluster
     ```sh
-    curl -X POST $ADD_HTTP_LB_URL/sum -d '{"a": 1, "b":1}'
-    
-    or
-    
-    grpcurl -d '{"a": 1, "b":1}' -plaintext -proto ./pb/add/add.proto $ADD_GRPC_LB_URL pb.Add.Sum
+    skaffold run 
     ```
-    - tic method
+
+    or 
+
     ```sh
-    curl -X POST $TICTAC_HTTP_LB_URL/tic
-    
-    or
-    
-    grpcurl -plaintext -proto ./pb/tictac/tictac.proto $TICTAC_GRPC_LB_URL pb.Tictac.Tic
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/k8s-all.yaml
     ```
-    - tac method
+1. We expose `add`, `tictac` service with TWO external service (LoadBalancer)
+2. Set the `ADD_HTTP_EXTERNAL_URL/ADD_GRPC_EXTERNAL_URL`
     ```sh
-    curl $TICTAC_HTTP_LB_URL/tac
-    
-    or
-    
-    grpcurl -plaintext -proto ./pb/tictac/tictac.proto $TICTAC_GRPC_LB_URL pb.Tictac.Tac
+    ADD_HTTP_EXTERNA_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
+    ADD_GRPC_EXTERNA_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+    ADD_EXTERNA_HOST=$(kubectl get service add-external -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    ADD_HTTP_EXTERNA_URL=$ADD_EXTERNA_HOST:$ADD_HTTP_EXTERNA_PORT
+    ADD_GRPC_EXTERNA_URL=$ADD_EXTERNA_HOST:$ADD_GRPC_EXTERNA_PORT
+    echo $ADD_HTTP_EXTERNA_URL
+    echo $ADD_GRPC_EXTERNA_URL
     ```
-4. Apply istio manifests `kubectl apply -f deployments/istio-manifests`
-5. Set the `GATEWAY_HTTP_URL/GATEWAY_GRPC_URL` environment variable in your shell to the public IP/port of the Istio Ingress gateway.
+
+1. Set the `TICTAC_HTTP_EXTERNAL_URL/TICTAC_GRPC_EXTERNAL_URL`
+
+    ```sh
+    TICTAC_HTTP_EXTERNAL_PORT=$(kubectl get service tictac-external -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
+    TICTAC_GRPC_EXTERNAL_PORT=$(kubectl get service tictac-external -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
+    TICTAC_EXTERNAL_HOST=$(kubectl get service tictac-external -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    TICTAC_HTTP_EXTERNAL_URL=$TICTAC_EXTERNAL_HOST:$TICTAC_HTTP_EXTERNAL_PORT
+    TICTAC_GRPC_EXTERNAL_URL=$TICTAC_EXTERNAL_HOST:$TICTAC_GRPC_EXTERNAL_PORT
+    echo $TICTAC_HTTP_EXTERNAL_URL
+    echo $TICTAC_GRPC_EXTERNAL_URL
+    ```
+
+1. Access by command
+   
+    **sum** restful method 
+    ```sh
+    curl -X POST $ADD_HTTP_EXTERNA_URL/sum -d '{"a": 1, "b":1}'
+    ```
+    
+    **sum** grpc mwthod
+    ```sh
+    grpcurl -d '{"a": 1, "b":1}' -plaintext -proto ./pb/add/add.proto $ADD_GRPC_EXTERNA_URL pb.Add.Sum
+    grpcurl -d '{"a": 1, "b":1}' -proto ./pb/add/add.proto localhost:443 pb.Add.Sum
+    ```
+    
+    **tic** restful method
+    ```sh
+    curl -X POST $TICTAC_HTTP_EXTERNAL_URL/tic
+    ```
+
+    **tic** grpc method
+    ```sh
+    grpcurl -plaintext -proto ./pb/tictac/tictac.proto $TICTAC_GRPC_EXTERNAL_URL pb.Tictac.Tic
+    ```
+    
+    **tac** restful method
+    ```sh
+    curl $TICTAC_HTTP_EXTERNAL_URL/tac
+    ```
+
+    **tac** grpc method
+    ```sh  
+    grpcurl -plaintext -proto ./pb/tictac/tictac.proto $TICTAC_GRPC_EXTERNAL_URL pb.Tictac.Tac
+    ```
+
+### Nginx ingress
+
+1. setup nginx ingress
+
+    ```sh
+    kubectl create ns ingress-nginx
+    helm install ingress-nginx -n ingress-nginx ingress-nginx/ingress-nginx
+    ```
+
+1. Prepre tls for nginx ingress GRPC for two grpc test domain `tictac.localhost` & `add.localhost`
+    - create RSA private key and certificate
+    ```sh
+    sh tls/generate.sh
+    ```
+    - set ingress tls
+    ```sh
+    sh tls/tls.sh
+    ```
+
+1. Setup nginx ingress 
+    ```
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/nginx-ingress.yaml
+    ```
+
+1. Set up `ADD_NGINX_INGRESS_GRPC_URL` & `TICTAC_NGINX_INGRESS_GRPC_URL`
+
+    ```sh
+    ADD_NGINX_INGRESS_GRPC_URL=$(kubectl get ingress add-grpc-ingress -o jsonpath='{.spec.tls[0].hosts[0]}'):443
+    TICTAC_NGINX_INGRESS_GRPC_URL=$(kubectl get ingress tictac-grpc-ingress -o jsonpath='{.spec.tls[0].hosts[0]}'):443
+    echo ${ADD_NGINX_INGRESS_GRPC_URL}
+    echo ${TICTAC_NGINX_INGRESS_GRPC_URL}
+    ```
+
+2. Access by command
+
+    **sum** restful method 
+    ```sh
+    curl --insecure -X POST -d '{"a": 1, "b":1}' https://localhost/api/v1/add/sum
+    ```
+
+    **sum** grpc method
+    ```sh
+    grpcurl --insecure -d '{"a": 1, "b":1 }' ${ADD_NGINX_INGRESS_GRPC_URL}  pb.Add.Sum
+    ```
+    
+    **tic** restful method
+    ```sh
+    curl --insecure -X POST https://localhost/api/v1/tictac/tic
+    ```
+
+    **tic** grpc method
+    ```sh
+    grpcurl --insecure ${TICTAC_NGINX_INGRESS_GRPC_URL} pb.Tictac.Tic
+    ```
+    
+    **tac** restful method
+    ```sh
+    curl --insecure https://localhost/api/v1/tictac/tac
+    ```
+
+    **tac** grpc method
+    ```sh  
+    grpcurl --insecure ${TICTAC_NGINX_INGRESS_GRPC_URL} pb.Tictac.Tac
+    ```
+
+3. Clean up Nnginx
+
+    ```sh
+    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/nginx-ingress.yaml
+
+    kubectl delete secret add-tls-secret
+    kubectl delete secret tictac-tls-secret
+    ```
+### Istio
+
+1. You should have a Kubernetes cluster with Istio already.
+2. Apply Istio manifests
+
+    ```sh
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/gateway-all.yaml
+    ```
+3. Set the `GATEWAY_HTTP_URL/GATEWAY_GRPC_URL` environment variable in your shell to the public IP/port of the Istio Ingress gateway.
     ```sh
     export INGRESS_HTTP_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
     export INGRESS_GRPC_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
@@ -74,37 +184,50 @@
     echo $GATEWAY_HTTP_URL
     echo $GATEWAY_GRPC_URL
     ```
-7. Access by command
-    - sum method
+4. Access by command
+    **sum** restful method 
     ```sh
     curl -X POST $GATEWAY_HTTP_URL/api/v1/add/sum -d '{"a": 1, "b":1}'
-    
-    or
-    
+    ```
+
+    **sum** grpc method
+    ```sh
     grpcurl -d '{"a": 1, "b":1}' -plaintext -proto ./pb/add/add.proto $GATEWAY_GRPC_URL pb.Add.Sum
     ```
-    - tic method
+    
+    **tic** restful method
     ```sh
     curl -X POST $GATEWAY_HTTP_URL/api/v1/tictac/tic
-    
-    or
-    
+    ```
+
+    **tic** grpc method
+    ```sh
     grpcurl -plaintext -proto ./pb/tictac/tictac.proto $GATEWAY_GRPC_URL pb.Tictac.Tic
     ```
-    - tac method
+    
+    **tac** restful method
     ```sh
     curl $GATEWAY_HTTP_URL/api/v1/tictac/tac
-    
-    or
-    
+    ```
+
+    **tac** grpc method
+    ```sh  
     grpcurl -plaintext -proto ./pb/tictac/tictac.proto $GATEWAY_GRPC_URL pb.Tictac.Tac
     ```
 
+1. CleanUp Istio
 
-## CleanUP
+    ```sh
+    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/gateway-all.yaml
+    ```
+## CleanUP claster
 
-`skaffold delete`
+```sh
+skaffold delete
+```
 
 or 
 
-`kubectl delete -f deployments/istio-manifests`
+```sh
+kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/k8s-all.yaml
+```
