@@ -19,6 +19,7 @@
   is deployed to Kubernetes with a single command using Skaffold.
 - **[go-kit/kit](https://github.com/go-kit/kit):** Go kit is a programming toolkit for building microservices (or elegant monoliths) in Go. We solve common problems in distributed systems and application architecture so you can focus on delivering business value.
 - **[kubernetes/ingress-nginx](https://github.com/kubernetes/ingress-nginx/)**: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
+- **[Jaeger](https://www.jaegertracing.io/)**: open source, end-to-end distributed tracing. Monitor and troubleshoot transactions in complex distributed systems
 
 ## Install
 
@@ -218,6 +219,48 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 
     ```sh
     kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/gateway-all.yaml
+    ```
+
+## Jaeger (Optional)
+
+1. Install Jaeger to Kubernetes cluster. Please visit [Jaeger: open source, end-to-end distributed tracing](https://www.jaegertracing.io/) to check more detail information
+
+    ```sh
+    kubectl create namespace observability
+    kubectl create -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/crds/jaegertracing.io_jaegers_crd.yaml
+    kubectl create -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/service_account.yaml
+    kubectl create -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/role.yaml
+    kubectl create -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/role_binding.yaml
+    kubectl create -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/operator.yaml
+    ```
+
+1. Setup Jaeger sample config 
+
+    ```
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/with-sampling.yaml
+    ```
+
+1. patch `add` & `tictac` env to connect Jaeger agent
+
+    ```sh
+    kubectl set env deployment/add QS_JAEGER_URL=with-sampling-agent.observability.svc.cluster.local:6831
+    kubectl set env deployment/tictac QS_JAEGER_URL=with-sampling-agent.observability.svc.cluster.local:6831
+    ```
+
+1. Do some restful or grpc requests as above steps that Jeager could collect some data
+1. port-forward Jaeger UI and access
+
+    ```
+    kubectl -n observability port-forward svc/with-sampling-query 16686
+    ```
+
+1. visit https://localhost:16686
+   ![](./ms-sample-jaeger.png)
+
+1. CleanUP jaeger
+
+    ```sh
+    kubectl delete ns observability
     ```
 ## CleanUP claster
 
