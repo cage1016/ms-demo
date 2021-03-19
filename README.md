@@ -69,8 +69,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     
     **sum** grpc mwthod
     ```sh
-    grpcurl -d '{"a": 1, "b":1}' -plaintext -proto ./pb/add/add.proto $ADD_GRPC_EXTERNA_URL pb.Add.Sum
-    grpcurl -d '{"a": 1, "b":1}' -proto ./pb/add/add.proto localhost:443 pb.Add.Sum
+    grpcurl -d '{"a": 1, "b":1}' -plaintext -proto ./pb/add/add.proto $ADD_GRPC_EXTERNA_URL pb.Add.Sum    
     ```
     
     **tic** restful method
