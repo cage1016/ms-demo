@@ -8,8 +8,8 @@ import (
 )
 
 type loggingMiddleware struct {
-	logger log.Logger `json:""`
-	next   AddService `json:""`
+	logger log.Logger
+	next   AddService
 }
 
 // LoggingMiddleware takes a logger as a dependency

@@ -15,6 +15,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/opentracing/opentracing-go"
 	stdopentracing "github.com/opentracing/opentracing-go"
 	"github.com/openzipkin/zipkin-go"
@@ -33,72 +34,52 @@ import (
 	pb "github.com/cage1016/ms-sample/pb/add"
 )
 
-const (
-	defJaegerURL   = ""
-	defZipkinV2URL = ""
-	defServiceName = "add"
-	defLogLevel    = "error"
-	defServiceHost = "localhost"
-	defHTTPPort    = "8180"
-	defGRPCPort    = "8181"
-
-	envJaegerURL   = "QS_JAEGER_URL"
-	envZipkinV2URL = "QS_ZIPKIN_V2_URL"
-	envServiceName = "QS_SERVICE_NAME"
-	envLogLevel    = "QS_LOG_LEVEL"
-	envServiceHost = "QS_SERVICE_HOST"
-	envHTTPPort    = "QS_HTTP_PORT"
-	envGRPCPort    = "QS_GRPC_PORT"
-)
-
-type config struct {
-	serviceName string
-	logLevel    string
-	serviceHost string
-	httpPort    string
-	grpcPort    string
-	zipkinV2URL string
-	jaegerURL   string
-}
-
-// Env reads specified environment variable. If no value has been found,
-// fallback is returned.
-func env(key string, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
+type Config struct {
+	ServiceName string `envconfig:"QS_SERVICE_NAME" default:"add"`
+	ServiceHost string `envconfig:"QS_SERVICE_HOST" default:"localhost"`
+	LogLevel    string `envconfig:"QS_LOG_LEVEL" default:"error"`
+	HttpPort    string `envconfig:"QS_HTTP_PORT" default:"8180"`
+	GrpcPort    string `envconfig:"QS_GRPC_PORT" default:"8181"`
+	ZipkinV2URL string `envconfig:"QS_ZIPKIN_V2_URL"`
+	JaegerURL   string `envconfig:"QS_JAEGER_URL"`
 }
 
 func main() {
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
-		logger = level.NewFilter(logger, level.AllowInfo())
 		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
-		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
-	cfg := loadConfig(logger)
-	logger = log.With(logger, "service", cfg.serviceName)
+
+	var cfg Config
+	err := envconfig.Process("qs", &cfg)
+	if err != nil {
+		level.Error(logger).Log("err", err)
+		os.Exit(1)
+	}
+
+	logger = level.NewFilter(logger, level.AllowInfo())
+	logger = log.With(logger, "service", cfg.ServiceName)
+	logger = log.With(logger, "caller", log.DefaultCaller)
 	level.Info(logger).Log("version", service.Version, "commitHash", service.CommitHash, "buildTimeStamp", service.BuildTimeStamp)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	tracer, closer := initJaeger(cfg.serviceName, cfg.jaegerURL, logger)
+	tracer, closer := initJaeger(cfg.ServiceName, cfg.JaegerURL, logger)
 	defer closer.Close()
 
-	zipkinTracer := initZipkin(cfg.serviceName, cfg.httpPort, cfg.zipkinV2URL, logger)
+	zipkinTracer := initZipkin(cfg.ServiceName, cfg.HttpPort, cfg.ZipkinV2URL, logger)
 	service := NewServer(logger)
 	endpoints := endpoints.New(service, logger, tracer, zipkinTracer)
 
 	hs := health.NewServer()
-	hs.SetServingStatus(cfg.serviceName, healthgrpc.HealthCheckResponse_SERVING)
+	hs.SetServingStatus(cfg.ServiceName, healthgrpc.HealthCheckResponse_SERVING)
 
 	wg := &sync.WaitGroup{}
 
-	go startHTTPServer(ctx, wg, endpoints, tracer, zipkinTracer, cfg.httpPort, logger)
-	go startGRPCServer(ctx, wg, endpoints, tracer, zipkinTracer, cfg.grpcPort, hs, logger)
+	go startHTTPServer(ctx, wg, endpoints, tracer, zipkinTracer, cfg.HttpPort, logger)
+	go startGRPCServer(ctx, wg, endpoints, tracer, zipkinTracer, cfg.GrpcPort, hs, logger)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -110,23 +91,12 @@ func main() {
 	fmt.Println("main: all goroutines have told us they've finished")
 }
 
-func loadConfig(logger log.Logger) (cfg config) {
-	cfg.serviceName = env(envServiceName, defServiceName)
-	cfg.logLevel = env(envLogLevel, defLogLevel)
-	cfg.serviceHost = env(envServiceHost, defServiceHost)
-	cfg.httpPort = env(envHTTPPort, defHTTPPort)
-	cfg.grpcPort = env(envGRPCPort, defGRPCPort)
-	cfg.zipkinV2URL = env(envZipkinV2URL, defZipkinV2URL)
-	cfg.jaegerURL = env(envJaegerURL, defJaegerURL)
-	return cfg
-}
-
 func NewServer(logger log.Logger) service.AddService {
 	service := service.New(logger)
 	return service
 }
 
-func initJaeger(svcName, url string, logger log.Logger) (opentracing.Tracer, io.Closer) {
+func initJaeger(svcName string, url string, logger log.Logger) (opentracing.Tracer, io.Closer) {
 	if url == "" {
 		return opentracing.NoopTracer{}, ioutil.NopCloser(nil)
 	}

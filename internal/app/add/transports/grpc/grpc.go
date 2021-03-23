@@ -22,7 +22,7 @@ import (
 )
 
 type grpcServer struct {
-	sum grpctransport.Handler `json:""`
+	sum grpctransport.Handler
 }
 
 func (s *grpcServer) Sum(ctx context.Context, req *pb.SumRequest) (rep *pb.SumResponse, err error) {
@@ -35,7 +35,7 @@ func (s *grpcServer) Sum(ctx context.Context, req *pb.SumRequest) (rep *pb.SumRe
 }
 
 // MakeGRPCServer makes a set of endpoints available as a gRPC server.
-func MakeGRPCServer(endpoints endpoints.Endpoints, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) (req pb.AddServer) { // Zipkin GRPC Server Trace can either be instantiated per gRPC method with a
+func MakeGRPCServer(endpoints endpoints.Endpoints, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) (req pb.AddServer) {
 	options := []grpctransport.ServerOption{
 		grpctransport.ServerErrorLogger(logger),
 	}
@@ -81,9 +81,9 @@ func encodeGRPCSumResponse(_ context.Context, grpcReply interface{}) (res interf
 // of the conn. The caller is responsible for constructing the conn, and
 // eventually closing the underlying transport. We bake-in certain middlewares,
 // implementing the client library pattern.
-func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) service.AddService { // Zipkin GRPC Client Trace can either be instantiated per gRPC method with a
+func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) service.AddService {
 	// global client middlewares
-	var options []grpctransport.ClientOption
+	options := []grpctransport.ClientOption{}
 
 	if zipkinTracer != nil {
 		// Zipkin GRPC Client Trace can either be instantiated per gRPC method with a

@@ -16,7 +16,7 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	SumEndpoint endpoint.Endpoint `json:""`
+	SumEndpoint endpoint.Endpoint
 }
 
 // New return a new instance of the endpoint that wraps the provided service.
@@ -56,6 +56,7 @@ func (e Endpoints) Sum(ctx context.Context, a int64, b int64) (res int64, err er
 	if err != nil {
 		return
 	}
+
 	response := resp.(SumResponse)
 	return response.Res, nil
 }

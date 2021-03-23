@@ -26,10 +26,6 @@ import (
 	"github.com/cage1016/ms-sample/internal/pkg/responses"
 )
 
-const (
-	contentType string = "application/json"
-)
-
 // ShowAdd godoc
 // @Summary Sum
 // @Description TODO
@@ -80,7 +76,8 @@ func decodeHTTPSumRequest(_ context.Context, r *http.Request) (interface{}, erro
 // remote instance. We expect instance to come from a service discovery system,
 // so likely of the form "host:port". We bake-in certain middlewares,
 // implementing the client library pattern.
-func NewHTTPClient(instance string, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) (service.AddService, error) { // Quickly sanitize the instance string.
+func NewHTTPClient(instance string, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) (service.AddService, error) {
+	// Quickly sanitize the instance string.
 	if !strings.HasPrefix(instance, "http") {
 		instance = "http://" + instance
 	}
@@ -90,7 +87,7 @@ func NewHTTPClient(instance string, otTracer stdopentracing.Tracer, zipkinTracer
 	}
 
 	// global client middlewares
-	var options []httptransport.ClientOption
+	options := []httptransport.ClientOption{}
 
 	if zipkinTracer != nil {
 		// Zipkin HTTP Client Trace can either be instantiated per endpoint with a
@@ -118,7 +115,9 @@ func NewHTTPClient(instance string, otTracer stdopentracing.Tracer, zipkinTracer
 			append(options, httptransport.ClientBefore(opentracing.ContextToHTTP(otTracer, logger)))...,
 		).Endpoint()
 		sumEndpoint = opentracing.TraceClient(otTracer, "Sum")(sumEndpoint)
-		sumEndpoint = zipkin.TraceEndpoint(zipkinTracer, "Sum")(sumEndpoint)
+		if zipkinTracer != nil {
+			sumEndpoint = zipkin.TraceEndpoint(zipkinTracer, "Sum")(sumEndpoint)
+		}
 		e.SumEndpoint = sumEndpoint
 	}
 

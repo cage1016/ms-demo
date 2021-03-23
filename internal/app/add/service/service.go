@@ -19,7 +19,7 @@ type AddService interface {
 
 // the concrete implementation of service interface
 type stubAddService struct {
-	logger log.Logger `json:"logger"`
+	logger log.Logger // logger
 }
 
 // New return a new instance of the service.

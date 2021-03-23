@@ -6,8 +6,8 @@ type Request interface {
 
 // SumRequest collects the request parameters for the Sum method.
 type SumRequest struct {
-	A int64 `json:"a"`
-	B int64 `json:"b"`
+	A int64 `json:"a"` // a
+	B int64 `json:"b"` // b
 }
 
 func (r SumRequest) validate() error {

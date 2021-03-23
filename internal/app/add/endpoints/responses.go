@@ -2,11 +2,11 @@ package endpoints
 
 import (
 	"net/http"
-
+	
 	httptransport "github.com/go-kit/kit/transport/http"
-
-	"github.com/cage1016/ms-sample/internal/app/add/service"
+	
 	"github.com/cage1016/ms-sample/internal/pkg/responses"
+	"github.com/cage1016/ms-sample/internal/app/add/service"
 )
 
 var (
@@ -17,8 +17,8 @@ var (
 
 // SumResponse collects the response values for the Sum method.
 type SumResponse struct {
-	Res int64 `json:"res"`
-	Err error `json:"-"`
+	Res int64 `json:"res"` // res
+	Err error `json:"-"`   // err
 }
 
 func (r SumResponse) StatusCode() int {
@@ -32,3 +32,4 @@ func (r SumResponse) Headers() http.Header {
 func (r SumResponse) Response() interface{} {
 	return responses.DataRes{APIVersion: service.Version, Data: r}
 }
+
