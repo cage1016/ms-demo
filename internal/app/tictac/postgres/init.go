@@ -12,15 +12,15 @@ import (
 
 // Config defines the options that are used when connecting to a PostgreSQL instance
 type Config struct {
-	Host        string
-	Port        string
-	User        string
-	Pass        string
-	Name        string
-	SSLMode     string
-	SSLCert     string
-	SSLKey      string
-	SSLRootCert string
+	Host        string `envconfig:"QS_DB_HOST" default:"localhost"`
+	Port        string `envconfig:"QS_DB_PORT" default:"5432"`
+	User        string `envconfig:"QS_DB_USER" default:"postgres"`
+	Pass        string `envconfig:"QS_DB_PASS" default:"password"`
+	Name        string `envconfig:"QS_DB" default:"tictac"`
+	SSLMode     string `envconfig:"QS_DB_SSL_MODE" default:"disable"`
+	SSLCert     string `envconfig:"QS_DB_SSL_CERT"`
+	SSLKey      string `envconfig:"QS_DB_SSL_KEY"`
+	SSLRootCert string `envconfig:"QS_DB_SSL_ROOT_CERT"`
 }
 
 func (cfg Config) ToURL() string {
