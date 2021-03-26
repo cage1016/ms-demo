@@ -66,7 +66,7 @@ spec:
             - name: QS_DB_SSL_KEY
               value: ""
             - name: QS_DB_SSL_MODE
-              value: ""
+              value: "disable"
             - name: QS_DB_SSL_ROOT_CERT
               value: ""
             - name: QS_DB_USER

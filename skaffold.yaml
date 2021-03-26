@@ -10,7 +10,8 @@ build:
         dependencies:
           paths:
             - cmd/add/main.go
-            - internal/**
+            - internal/app/add/**
+            - internal/pkg/**
     - image: index.docker.io/cage1016/ms-sample-tictac
       buildpacks:
         builder: "gcr.io/buildpacks/builder:v1"
@@ -19,7 +20,8 @@ build:
         dependencies:
           paths:
             - cmd/tictac/main.go
-            - internal/**          
+            - internal/app/tictac/**
+            - internal/pkg/**
   tagPolicy:
       sha256: {}
   local:
