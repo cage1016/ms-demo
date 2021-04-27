@@ -51,7 +51,7 @@ spec:
           - mountPath: "/var/lib/postgresql/data:Z"
             name: ms-postgresdb-storage
         - name: tictac
-          image: index.docker.io/cage1016/ms-sample-tictac
+          image: ghcr.io/cage1016/ms-sample-tictac
           env:
             - name: QS_DB
               value: "tictac"

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: add
-          image: index.docker.io/cage1016/ms-sample-add
+          image: ghcr.io/cage1016/ms-sample-add
           env:
             - name: QS_GRPC_PORT
               value: "10021"

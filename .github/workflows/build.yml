@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  push:
+    branches: 
+    - master
+
+jobs:
+  build-oci:
+    name: build container image
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        name: Checkout code
+        uses: actions/checkout@v2
+      - name: Login to GitHub Package Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+      - id: setup-pack
+        uses: buildpacks/github-actions/setup-pack@v4.1.0
+      - id: build container images
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          pack build --builder ${BUILDER} --env GOOGLE_BUILDABLE=cmd/add/main.go --publish ${ADD_IMAGE}
+          pack build --builder ${BUILDER} --env GOOGLE_BUILDABLE=cmd/tictac/main.go --publish ${TICTAC_IMAGE}
+        shell: bash
+        env:
+          BUILDER: gcr.io/buildpacks/builder:v1
+          ADD_IMAGE: ghcr.io/${{ github.repository_owner }}/ms-sample-add
+          TICTAC_IMAGE: ghcr.io/${{ github.repository_owner }}/ms-sample-tictac

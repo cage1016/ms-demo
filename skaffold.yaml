@@ -2,7 +2,7 @@ apiVersion: skaffold/v2beta5
 kind: Config
 build:
   artifacts:
-    - image: index.docker.io/cage1016/ms-sample-add
+    - image: ghcr.io/cage1016/ms-sample-add
       buildpacks:
         builder: "gcr.io/buildpacks/builder:v1"
         env:
@@ -12,7 +12,7 @@ build:
             - cmd/add/main.go
             - internal/app/add/**
             - internal/pkg/**
-    - image: index.docker.io/cage1016/ms-sample-tictac
+    - image: ghcr.io/cage1016/ms-sample-tictac
       buildpacks:
         builder: "gcr.io/buildpacks/builder:v1"
         env:
