@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - id: setup-pack
         uses: buildpacks/github-actions/setup-pack@v4.1.0
-      - id: build container images
+      - id: build-container-images
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
