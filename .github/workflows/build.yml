@@ -3,7 +3,11 @@ name: Build
 on:
   push:
     branches: 
-    - master
+      - master
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "pb/**"
 
 jobs:
   build-oci:
