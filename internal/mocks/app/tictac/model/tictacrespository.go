@@ -49,15 +49,15 @@ func (mr *MockTictacRespositoryMockRecorder) Tac(arg0 interface{}) *gomock.Call 
 }
 
 // Tic mocks base method
-func (m *MockTictacRespository) Tic(arg0 context.Context) error {
+func (m *MockTictacRespository) Tic(arg0 context.Context, arg1 int64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Tic", arg0)
+	ret := m.ctrl.Call(m, "Tic", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Tic indicates an expected call of Tic
-func (mr *MockTictacRespositoryMockRecorder) Tic(arg0 interface{}) *gomock.Call {
+func (mr *MockTictacRespositoryMockRecorder) Tic(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tic", reflect.TypeOf((*MockTictacRespository)(nil).Tic), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tic", reflect.TypeOf((*MockTictacRespository)(nil).Tic), arg0, arg1)
 }

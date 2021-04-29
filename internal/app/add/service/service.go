@@ -12,6 +12,7 @@ type Middleware func(AddService) AddService
 // Service describes a service that adds things together
 // Implement yor service methods methods.
 // e.x: Foo(ctx context.Context, s string)(rs string, err error)
+//go:generate mockgen -destination ../../../../internal/mocks/app/add/service/addservice.go -package=automocks . AddService
 type AddService interface {
 	// [method=post,expose=true]
 	Sum(ctx context.Context, a int64, b int64) (res int64, err error)

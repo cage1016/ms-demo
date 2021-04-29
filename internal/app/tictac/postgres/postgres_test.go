@@ -21,15 +21,23 @@ func Test_Tic(t *testing.T) {
 		mock sqlmock.Sqlmock
 	}
 
+	type args struct {
+		value int64
+	}
+
 	tests := []struct {
 		name    string
+		args    args
 		prepare func(f *fields)
 		wantErr bool
 	}{
 		{
 			name: "Tic func",
+			args: args{
+				value: 1,
+			},
 			prepare: func(f *fields) {
-				f.mock.ExpectExec(regexp.QuoteMeta("UPDATE \"tictacs\" SET \"value\"=value+1 WHERE 1=1")).WillReturnResult(sqlmock.NewResult(1, 1))
+				f.mock.ExpectExec(regexp.QuoteMeta("UPDATE \"tictacs\" SET \"value\"=$1 WHERE 1=1")).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			wantErr: false,
 		},
@@ -53,7 +61,7 @@ func Test_Tic(t *testing.T) {
 			gdb, err := gorm.Open(postgres.New(postgres.Config{Conn: db}), &gorm.Config{})
 			repo := psql.New(gdb, log.NewLogfmtLogger(os.Stderr))
 
-			if err := repo.Tic(context.Background()); (err != nil) != tt.wantErr {
+			if err := repo.Tic(context.Background(), tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf("Add(ctx context.Context) error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
