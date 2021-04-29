@@ -8,6 +8,6 @@ type Tictac struct {
 
 //go:generate mockgen -destination ../../../../internal/mocks/app/tictac/model/tictacrespository.go -package=automocks . TictacRespository
 type TictacRespository interface {
-	Tic(context.Context) error
+	Tic(context.Context, int64) error
 	Tac(context.Context) (int64, error)
 }

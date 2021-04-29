@@ -28,6 +28,8 @@ import (
 	"google.golang.org/grpc/reflection"
 	"gorm.io/gorm"
 
+	addservice "github.com/cage1016/ms-sample/internal/app/add/service"
+	addtransportsgrpc "github.com/cage1016/ms-sample/internal/app/add/transports/grpc"
 	"github.com/cage1016/ms-sample/internal/app/tictac/endpoints"
 	"github.com/cage1016/ms-sample/internal/app/tictac/postgres"
 	"github.com/cage1016/ms-sample/internal/app/tictac/service"
@@ -46,6 +48,7 @@ type Config struct {
 	GrpcPort    string `envconfig:"QS_GRPC_PORT" default:"8181"`
 	ZipkinV2URL string `envconfig:"QS_ZIPKIN_V2_URL"`
 	JaegerURL   string `envconfig:"QS_JAEGER_URL"`
+	AddURL      string `envconfig:"QS_ADD_URL"`
 }
 
 func main() {
@@ -70,6 +73,12 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	conn, err := grpc.DialContext(ctx, cfg.AddURL, grpc.WithInsecure())
+	if err != nil {
+		level.Error(logger).Log("method", "grpc.DialContext", "err", err)
+		os.Exit(1)
+	}
+
 	db := connectToDB(cfg.DbConfig, logger)
 	if cfg.LogLevel == logconv.Debug {
 		db = db.Debug()
@@ -79,7 +88,9 @@ func main() {
 	defer closer.Close()
 
 	zipkinTracer := initZipkin(cfg.ServiceName, cfg.HttpPort, cfg.ZipkinV2URL, logger)
-	service := NewServer(db, logger)
+
+	addsvc := addtransportsgrpc.NewGRPCClient(conn, tracer, zipkinTracer, logger)
+	service := NewServer(db, addsvc, logger)
 	endpoints := endpoints.New(service, logger, tracer, zipkinTracer)
 
 	hs := health.NewServer()
@@ -109,9 +120,9 @@ func connectToDB(dbConfig postgres.Config, logger log.Logger) *gorm.DB {
 	return db
 }
 
-func NewServer(db *gorm.DB, logger log.Logger) service.TictacService {
+func NewServer(db *gorm.DB, addsvc addservice.AddService, logger log.Logger) service.TictacService {
 	repo := postgres.New(db, logger)
-	service := service.New(repo, logger)
+	service := service.New(repo, addsvc, logger)
 	return service
 }
 

@@ -77,6 +77,8 @@ spec:
               value: "10120"
             - name: QS_LOG_LEVEL
               value: "info"
+            - name: QS_ADD_URL
+              value: "add:8000"
 ---
 kind: Service
 apiVersion: v1

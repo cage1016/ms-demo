@@ -3,8 +3,11 @@ package service
 import (
 	"context"
 
-	"github.com/cage1016/ms-sample/internal/app/tictac/model"
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
+
+	addservice "github.com/cage1016/ms-sample/internal/app/add/service"
+	"github.com/cage1016/ms-sample/internal/app/tictac/model"
 )
 
 // Middleware describes a service (as opposed to endpoint) middleware.
@@ -24,15 +27,16 @@ type TictacService interface {
 // the concrete implementation of service interface
 type stubTictacService struct {
 	logger log.Logger
+	addsvc addservice.AddService
 	repo   model.TictacRespository
 }
 
 // New return a new instance of the service.
 // If you want to add service middleware this is the place to put them.
-func New(repo model.TictacRespository, logger log.Logger) (s TictacService) {
+func New(repo model.TictacRespository, addsvc addservice.AddService, logger log.Logger) (s TictacService) {
 	var svc TictacService
 	{
-		svc = &stubTictacService{logger: logger, repo: repo}
+		svc = &stubTictacService{logger: logger, addsvc: addsvc, repo: repo}
 		svc = LoggingMiddleware(logger)(svc)
 	}
 	return svc
@@ -40,7 +44,19 @@ func New(repo model.TictacRespository, logger log.Logger) (s TictacService) {
 
 // Implement the business logic of Tic
 func (ti *stubTictacService) Tic(ctx context.Context) (err error) {
-	return ti.repo.Tic(ctx)
+	v, err := ti.repo.Tac(ctx)
+	if err != nil {
+		return err
+	}
+
+	nv, err := ti.addsvc.Sum(ctx, v, 1)
+	if err != nil {
+		return err
+	}
+
+	level.Info(ti.logger).Log("method", "ti.addsvc.Sum", "value", nv)
+
+	return ti.repo.Tic(ctx, v+1)
 }
 
 // Implement the business logic of Tac

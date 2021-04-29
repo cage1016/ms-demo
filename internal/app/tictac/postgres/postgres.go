@@ -26,11 +26,11 @@ func New(db *gorm.DB, logger log.Logger) model.TictacRespository {
 	}
 }
 
-func (cr *tictacRespository) Tic(ctx context.Context) (err error) {
+func (cr *tictacRespository) Tic(ctx context.Context, value int64) (err error) {
 	cr.mu.Lock()
 	defer cr.mu.Unlock()
 
-	err = cr.db.WithContext(ctx).Model(&model.Tictac{}).Where("1=1").Update("value", gorm.Expr("value+1")).Error
+	err = cr.db.WithContext(ctx).Model(&model.Tictac{}).Where("1=1").Update("value", value).Error
 	if err != nil {
 		level.Error(cr.log).Log("method", "tic", "err", err)
 	}
