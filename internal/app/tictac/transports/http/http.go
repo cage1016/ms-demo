@@ -24,6 +24,7 @@ import (
 	"github.com/cage1016/ms-sample/internal/pkg/errors"
 	"github.com/cage1016/ms-sample/internal/pkg/jwt"
 	"github.com/cage1016/ms-sample/internal/pkg/responses"
+	"github.com/cage1016/ms-sample/internal/pkg/telepresence"
 )
 
 const (
@@ -66,6 +67,7 @@ func TacHandler(m *bone.Mux, endpoints endpoints.Endpoints, options []httptransp
 // predefined paths.
 func NewHTTPHandler(endpoints endpoints.Endpoints, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) http.Handler {
 	options := []httptransport.ServerOption{
+		httptransport.ServerBefore(telepresence.HTTPToContext()),
 		httptransport.ServerErrorEncoder(responses.ErrorEncodeJSONResponse(CustomErrorEncoder)),
 		httptransport.ServerErrorLogger(logger),
 	}

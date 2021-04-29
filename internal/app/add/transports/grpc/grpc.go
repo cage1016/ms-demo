@@ -18,6 +18,7 @@ import (
 	"github.com/cage1016/ms-sample/internal/app/add/service"
 	"github.com/cage1016/ms-sample/internal/pkg/errors"
 	"github.com/cage1016/ms-sample/internal/pkg/jwt"
+	"github.com/cage1016/ms-sample/internal/pkg/telepresence"
 	pb "github.com/cage1016/ms-sample/pb/add"
 )
 
@@ -37,6 +38,7 @@ func (s *grpcServer) Sum(ctx context.Context, req *pb.SumRequest) (rep *pb.SumRe
 // MakeGRPCServer makes a set of endpoints available as a gRPC server.
 func MakeGRPCServer(endpoints endpoints.Endpoints, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) (req pb.AddServer) {
 	options := []grpctransport.ServerOption{
+		grpctransport.ServerBefore(telepresence.GRPCToContext()),
 		grpctransport.ServerErrorLogger(logger),
 	}
 
@@ -83,7 +85,9 @@ func encodeGRPCSumResponse(_ context.Context, grpcReply interface{}) (res interf
 // implementing the client library pattern.
 func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) service.AddService {
 	// global client middlewares
-	options := []grpctransport.ClientOption{}
+	options := []grpctransport.ClientOption{
+		grpctransport.ClientBefore(telepresence.ContextToGRPC()),
+	}
 
 	if zipkinTracer != nil {
 		// Zipkin GRPC Client Trace can either be instantiated per gRPC method with a

@@ -18,6 +18,7 @@ import (
 	"github.com/cage1016/ms-sample/internal/app/tictac/service"
 	"github.com/cage1016/ms-sample/internal/pkg/errors"
 	"github.com/cage1016/ms-sample/internal/pkg/jwt"
+	"github.com/cage1016/ms-sample/internal/pkg/telepresence"
 	pb "github.com/cage1016/ms-sample/pb/tictac"
 )
 
@@ -47,6 +48,7 @@ func (s *grpcServer) Tac(ctx context.Context, req *pb.TacRequest) (rep *pb.TacRe
 // MakeGRPCServer makes a set of endpoints available as a gRPC server.
 func MakeGRPCServer(endpoints endpoints.Endpoints, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) (req pb.TictacServer) {
 	options := []grpctransport.ServerOption{
+		grpctransport.ServerBefore(telepresence.GRPCToContext()),
 		grpctransport.ServerErrorLogger(logger),
 	}
 
@@ -114,7 +116,9 @@ func encodeGRPCTacResponse(_ context.Context, grpcReply interface{}) (res interf
 // implementing the client library pattern.
 func NewGRPCClient(conn *grpc.ClientConn, otTracer stdopentracing.Tracer, zipkinTracer *stdzipkin.Tracer, logger log.Logger) service.TictacService {
 	// global client middlewares
-	var options []grpctransport.ClientOption
+	options := []grpctransport.ClientOption{
+		grpctransport.ClientBefore(telepresence.ContextToGRPC()),
+	}
 
 	if zipkinTracer != nil {
 		// Zipkin GRPC Client Trace can either be instantiated per gRPC method with a
