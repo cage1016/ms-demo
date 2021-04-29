@@ -21,6 +21,7 @@
 - **[go-kit/kit](https://github.com/go-kit/kit):** Go kit is a programming toolkit for building microservices (or elegant monoliths) in Go. We solve common problems in distributed systems and application architecture so you can focus on delivering business value.
 - **[kubernetes/ingress-nginx](https://github.com/kubernetes/ingress-nginx/)**: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 - **[Jaeger](https://www.jaegertracing.io/)**: open source, end-to-end distributed tracing. Monitor and troubleshoot transactions in complex distributed systems
+- **[Telepresence](https://www.telepresence.io/)**: Local development against a remote Kubernetes or OpenShift cluster
 
 ## Install
 
@@ -71,7 +72,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     
     **sum** grpc mwthod
     ```sh
-    grpcurl -d '{"a": 1, "b":1}' -plaintext -proto ./pb/add/add.proto $ADD_GRPC_EXTERNA_URL pb.Add.Sum    
+    grpcurl -d '{"a": 1, "b":1}' -plaintext -proto ./pb/add/add.proto $ADD_GRPC_EXTERNA_URL pb.Add.Sum
     ```
     
     **tic** restful method
