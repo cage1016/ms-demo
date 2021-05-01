@@ -44,19 +44,19 @@ func New(repo model.TictacRespository, addsvc addservice.AddService, logger log.
 
 // Implement the business logic of Tic
 func (ti *stubTictacService) Tic(ctx context.Context) (err error) {
-	v, err := ti.repo.Tac(ctx)
+	dv, err := ti.repo.Tac(ctx)
 	if err != nil {
+		level.Error(ti.logger).Log("method", "ti.repo.Tac", "err", err)
 		return err
 	}
 
-	nv, err := ti.addsvc.Sum(ctx, v, 1)
+	nv, err := ti.addsvc.Sum(ctx, dv, 1)
 	if err != nil {
+		level.Error(ti.logger).Log("method", "ti.addsvc.Sum", "err", err)
 		return err
 	}
 
-	level.Info(ti.logger).Log("method", "ti.addsvc.Sum", "value", nv)
-
-	return ti.repo.Tic(ctx, v+1)
+	return ti.repo.Tic(ctx, nv)
 }
 
 // Implement the business logic of Tac

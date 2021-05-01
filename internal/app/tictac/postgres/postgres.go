@@ -32,7 +32,7 @@ func (cr *tictacRespository) Tic(ctx context.Context, value int64) (err error) {
 
 	err = cr.db.WithContext(ctx).Model(&model.Tictac{}).Where("1=1").Update("value", value).Error
 	if err != nil {
-		level.Error(cr.log).Log("method", "tic", "err", err)
+		level.Error(cr.log).Log("method", "tictacRespository_tic", "err", err)
 	}
 	return
 }
@@ -46,7 +46,7 @@ func (cr *tictacRespository) Tac(ctx context.Context) (res int64, err error) {
 		if err == sql.ErrNoRows {
 			return 0, nil
 		}
-		level.Error(cr.log).Log("method", "tac", "err", err)
+		level.Error(cr.log).Log("method", "tictacRespository_tac", "err", err)
 	}
 	return
 }
