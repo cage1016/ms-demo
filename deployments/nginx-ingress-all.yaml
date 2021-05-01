@@ -8,7 +8,7 @@ metadata:
 spec:
   rules:
   - http:
-      paths:        
+      paths:
         - path: /api/v1/add(/|$)(.*)
           backend:
             serviceName: add

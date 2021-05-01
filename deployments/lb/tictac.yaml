@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: tictac-external
+  labels:
+    app: tictac
+spec:
+  type: LoadBalancer
+  selector:
+    app: tictac
+  ports:
+    - port: 9190
+      name: http
+      targetPort: 10120
+    - port: 9191
+      name: grpc
+      targetPort: 10121

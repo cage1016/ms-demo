@@ -37,10 +37,19 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     or 
 
     ```sh
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/k8s-all.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/kubernetes-manifests-all.yaml
     ```
+
+### LoadBalancer
+
+1. Apply LoadBalancer yaml
+
+    ```bash
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/lb-all.yaml
+    ```
+
 1. We expose `add`, `tictac` service with TWO external service (LoadBalancer)
-2. Set the `ADD_HTTP_EXTERNAL_URL/ADD_GRPC_EXTERNAL_URL`
+1. Set the `ADD_HTTP_EXTERNAL_URL/ADD_GRPC_EXTERNAL_URL`
     ```sh
     ADD_HTTP_EXTERNA_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
     ADD_GRPC_EXTERNA_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
@@ -95,6 +104,12 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     grpcurl -plaintext -proto ./pb/tictac/tictac.proto $TICTAC_GRPC_EXTERNAL_URL pb.Tictac.Tac
     ```
 
+1. Remove LoadBalancer
+
+    ```bash
+    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/lb-all.yaml
+    ```
+
 ### Nginx ingress
 
 1. setup nginx ingress
@@ -104,19 +119,19 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     helm install ingress-nginx -n ingress-nginx ingress-nginx/ingress-nginx
     ```
 
-1. Prepre tls for nginx ingress GRPC for two grpc test domain `tictac.localhost` & `add.localhost`
+1. Prepare tls for nginx ingress GRPC for two grpc test domain `tictac.localhost` & `add.localhost`
     - create RSA private key and certificate
-    ```sh
-    sh tls/generate.sh
-    ```
+        ```sh
+        sh tls/generate.sh
+        ```
     - set ingress tls
-    ```sh
-    sh tls/tls.sh
-    ```
+        ```sh
+        sh tls/tls.sh
+        ```
 
 1. Setup nginx ingress 
     ```
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/nginx-ingress.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/nginx-ingress-all.yaml
     ```
 
 1. Set up `ADD_NGINX_INGRESS_GRPC_URL` & `TICTAC_NGINX_INGRESS_GRPC_URL`
@@ -163,7 +178,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 3. Clean up Nnginx
 
     ```sh
-    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/nginx-ingress.yaml
+    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/nginx-ingress-all.yaml
 
     kubectl delete secret add-tls-secret
     kubectl delete secret tictac-tls-secret
@@ -227,7 +242,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 
 1. Install Jaeger to Kubernetes cluster. Please visit [Jaeger: open source, end-to-end distributed tracing](https://www.jaegertracing.io/) to check more detail information
 
-    ```sh
+    ```bash
     kubectl create namespace observability
     kubectl create -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/crds/jaegertracing.io_jaegers_crd.yaml
     kubectl create -n observability -f https://raw.githubusercontent.com/jaegertracing/jaeger-operator/master/deploy/service_account.yaml
