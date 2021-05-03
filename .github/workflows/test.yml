@@ -2,9 +2,17 @@ on:
   push:
     branches:
       - master
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "pb/**"
   pull_request:
     branches:
       - master
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "pb/**"
 
 name: run tests
 jobs:
