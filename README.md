@@ -189,7 +189,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 2. Apply Istio manifests
 
     ```sh
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/gateway-all.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/istio-manifests-all.yaml
     ```
 3. Set the `GATEWAY_HTTP_URL/GATEWAY_GRPC_URL` environment variable in your shell to the public IP/port of the Istio Ingress gateway.
     ```sh
@@ -235,7 +235,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 1. CleanUp Istio
 
     ```sh
-    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/gateway-all.yaml
+    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/istio-manifests-all.yaml
     ```
 
 ## Jaeger (Optional)
@@ -288,5 +288,5 @@ skaffold delete
 or 
 
 ```sh
-kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/k8s-all.yaml
+kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/kubernetes-manifests-all.yaml
 ```
