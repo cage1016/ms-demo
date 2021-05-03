@@ -1,46 +1,3 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: add
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: add
-  template:
-    metadata:
-      labels:
-        app: add
-    spec:
-      containers:
-        - name: add
-          image: ghcr.io/cage1016/ms-sample-add
-          env:
-            - name: QS_GRPC_PORT
-              value: "10021"
-            - name: QS_HTTP_PORT
-              value: "10020"
-            - name: QS_LOG_LEVEL
-              value: "info"
-          resources:
-            requests:
-              cpu: 0
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: add
-spec:
-  selector:
-    app: add
-  ports:
-    - port: 80
-      name: http
-      targetPort: 10020
-    - port: 8000
-      name: grpc
-      targetPort: 10021
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -109,7 +66,7 @@ spec:
             - name: QS_DB_SSL_KEY
               value: ""
             - name: QS_DB_SSL_MODE
-              value: ""
+              value: "disable"
             - name: QS_DB_SSL_ROOT_CERT
               value: ""
             - name: QS_DB_USER
@@ -137,3 +94,46 @@ spec:
     - port: 8000
       name: grpc
       targetPort: 10121
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: add
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: add
+  template:
+    metadata:
+      labels:
+        app: add
+    spec:
+      containers:
+        - name: add
+          image: ghcr.io/cage1016/ms-sample-add
+          env:
+            - name: QS_GRPC_PORT
+              value: "10021"
+            - name: QS_HTTP_PORT
+              value: "10020"
+            - name: QS_LOG_LEVEL
+              value: "info"
+          resources:
+            requests:
+              cpu: 0
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: add
+spec:
+  selector:
+    app: add
+  ports:
+    - port: 80
+      name: http
+      targetPort: 10020
+    - port: 8000
+      name: grpc
+      targetPort: 10021
