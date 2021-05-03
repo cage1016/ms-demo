@@ -19,6 +19,7 @@ data:
   POSTGRES_DB: tictac
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: password
+  PGDATA: /var/lib/postgresql/data/pgdata
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -48,7 +49,7 @@ spec:
           - containerPort: 5432
           resources: {}
           volumeMounts:
-          - mountPath: "/var/lib/postgresql/data:Z"
+          - mountPath: "/var/lib/postgresql/data"
             name: ms-postgresdb-storage
         - name: tictac
           image: ghcr.io/cage1016/ms-sample-tictac
