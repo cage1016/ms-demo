@@ -6,6 +6,7 @@ on:
       - "cmd/**"
       - "internal/**"
       - "pb/**"
+      - "deployments/**"
   pull_request:
     branches:
       - master
@@ -13,6 +14,7 @@ on:
       - "cmd/**"
       - "internal/**"
       - "pb/**"
+      - "deployments/**"
 
 name: run tests
 jobs:

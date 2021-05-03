@@ -8,6 +8,7 @@ on:
       - "cmd/**"
       - "internal/**"
       - "pb/**"
+      - "deployments/**"
 
 jobs:
   build-oci:
