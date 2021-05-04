@@ -54,6 +54,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     ADD_HTTP_EXTERNA_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
     ADD_GRPC_EXTERNA_PORT=$(kubectl get service add-external -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
     ADD_EXTERNA_HOST=$(kubectl get service add-external -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    # ADD_EXTERNA_HOST=$(kubectl get service add-external -o jsonpath='{.status.loadBalancer.ingress[0].ip}') # unmark if necessary
     ADD_HTTP_EXTERNA_URL=$ADD_EXTERNA_HOST:$ADD_HTTP_EXTERNA_PORT
     ADD_GRPC_EXTERNA_URL=$ADD_EXTERNA_HOST:$ADD_GRPC_EXTERNA_PORT
     echo $ADD_HTTP_EXTERNA_URL
@@ -66,13 +67,14 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     TICTAC_HTTP_EXTERNAL_PORT=$(kubectl get service tictac-external -o jsonpath='{.spec.ports[?(@.name=="http")].port}')
     TICTAC_GRPC_EXTERNAL_PORT=$(kubectl get service tictac-external -o jsonpath='{.spec.ports[?(@.name=="grpc")].port}')
     TICTAC_EXTERNAL_HOST=$(kubectl get service tictac-external -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    # TICTAC_EXTERNAL_HOST=$(kubectl get service tictac-external -o jsonpath='{.status.loadBalancer.ingress[0].ip}') # unmark if necessary
     TICTAC_HTTP_EXTERNAL_URL=$TICTAC_EXTERNAL_HOST:$TICTAC_HTTP_EXTERNAL_PORT
     TICTAC_GRPC_EXTERNAL_URL=$TICTAC_EXTERNAL_HOST:$TICTAC_GRPC_EXTERNAL_PORT
     echo $TICTAC_HTTP_EXTERNAL_URL
     echo $TICTAC_GRPC_EXTERNAL_URL
     ```
 
-1. Access by command
+2. Access by command
    
     **sum** restful method 
     ```sh
@@ -104,7 +106,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
     grpcurl -plaintext -proto ./pb/tictac/tictac.proto $TICTAC_GRPC_EXTERNAL_URL pb.Tictac.Tac
     ```
 
-1. Remove LoadBalancer
+3. Remove LoadBalancer
 
     ```bash
     kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/lb-all.yaml
