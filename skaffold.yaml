@@ -7,11 +7,6 @@ build:
         builder: "gcr.io/buildpacks/builder:v1"
         env:
           - GOOGLE_BUILDABLE=cmd/add/main.go
-        buildpacks:
-          - google.go.runtime
-          - google.go.build
-          - google.utils.label
-          - cage1016/github-assets-cnb@1.0.0
         projectDescriptor: project.toml
         dependencies:
           paths:
@@ -23,11 +18,6 @@ build:
         builder: "gcr.io/buildpacks/builder:v1"
         env:
           - GOOGLE_BUILDABLE=cmd/tictac/main.go
-        buildpacks:
-          - google.go.runtime
-          - google.go.build
-          - google.utils.label
-          - cage1016/github-assets-cnb@1.0.0
         projectDescriptor: project.toml
         dependencies:
           paths:
