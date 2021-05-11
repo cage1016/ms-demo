@@ -30,10 +30,21 @@ jobs:
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
-          pack build --builder ${BUILDER} --env GOOGLE_BUILDABLE=cmd/add/main.go --publish ${ADD_IMAGE}
-          pack build --builder ${BUILDER} --env GOOGLE_BUILDABLE=cmd/tictac/main.go --publish ${TICTAC_IMAGE}
+
+          pack build --builder ${BUILDER} --buildpack google.go.runtime \
+                                          --buildpack google.go.build \
+                                          --buildpack google.utils.label \
+                                          --buildpack ${GITHUB_ASSETS_CNB} \
+                                          --env GOOGLE_BUILDABLE=cmd/add/main.go --publish ${ADD_IMAGE}
+          
+          pack build --builder ${BUILDER} --buildpack google.go.runtime \
+                                          --buildpack google.go.build \
+                                          --buildpack google.utils.label \
+                                          --buildpack ${GITHUB_ASSETS_CNB} \
+                                          --env GOOGLE_BUILDABLE=cmd/tictac/main.go --publish ${TICTAC_IMAGE}
         shell: bash
         env:
           BUILDER: gcr.io/buildpacks/builder:v1
           ADD_IMAGE: ghcr.io/${{ github.repository_owner }}/ms-sample-add
           TICTAC_IMAGE: ghcr.io/${{ github.repository_owner }}/ms-sample-tictac
+          GITHUB_ASSETS_CNB: cage1016/github-assets-cnb@1.0.0

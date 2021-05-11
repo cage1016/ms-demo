@@ -80,6 +80,19 @@ spec:
               value: "info"
             - name: QS_ADD_URL
               value: "add:8000"
+          ports:
+          - containerPort: 10121
+          readinessProbe:
+            exec:
+              command: ["/layers/cage1016_github-assets-cnb/github-assets/bin/grpc_health_probe", "-addr=:10121"]
+            initialDelaySeconds: 5
+          livenessProbe:
+            exec:
+              command: ["/layers/cage1016_github-assets-cnb/github-assets/bin/grpc_health_probe", "-addr=:10121"]
+            initialDelaySeconds: 10
+          resources:
+            requests:
+              cpu: 0            
 ---
 kind: Service
 apiVersion: v1

@@ -1,0 +1,25 @@
+# [[build.env]]
+# optional, github token for private assets 
+# name = "TOKEN"
+# value = "<github-token>"
+
+# skaffold
+[[build.env]]
+# required
+name = "REPO"
+value = "grpc-ecosystem/grpc-health-probe"
+
+[[build.env]]
+# required
+name = "FILE"
+value = "grpc_health_probe-linux-amd64"
+
+[[build.env]]
+# optional, default set to FILE value
+name = "TARGET"
+value = "grpc_health_probe"
+
+# [[build.env]]
+# # optional, default set to 'latest'
+# name = "VERSION"
+# value = "v1.22.0"
