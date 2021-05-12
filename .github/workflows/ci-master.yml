@@ -18,6 +18,7 @@ on:
       - "internal/**"
       - "pb/**"
       - "deployments/**"
+  workflow_dispatch: # Run workflow manually (without waiting for the cron to be called), through the Github Actions Workflow page directly
 
 jobs:
   test:
