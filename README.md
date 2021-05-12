@@ -1,6 +1,6 @@
 # gokit microservice demo
 
-[![run tests](https://github.com/cage1016/ms-demo/actions/workflows/test.yml/badge.svg)](https://github.com/cage1016/ms-demo/actions/workflows/test.yml)
+[![Continuous Integration - Master/Release](https://github.com/cage1016/ms-demo/actions/workflows/ci-master.yml/badge.svg)](https://github.com/cage1016/ms-demo/actions/workflows/ci-master.yml)
 
 | Service | Description           |
 | ------- | --------------------- |
