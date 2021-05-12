@@ -1,7 +1,10 @@
+name: "Continuous Integration - Master/Release"
+
 on:
   push:
     branches:
       - master
+      - release/*
     paths:
       - "cmd/**"
       - "internal/**"
@@ -16,7 +19,6 @@ on:
       - "pb/**"
       - "deployments/**"
 
-name: run tests
 jobs:
   test:
     strategy:
