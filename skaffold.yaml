@@ -2,9 +2,9 @@ apiVersion: skaffold/v2beta5
 kind: Config
 build:
   artifacts:
-    - image: ghcr.io/cage1016/ms-sample-add
+    - image: ms-sample-add
       buildpacks:
-        builder: "gcr.io/buildpacks/builder:v1"
+        builder: gcr.io/buildpacks/builder:v1
         env:
           - GOOGLE_BUILDABLE=cmd/add/main.go
         projectDescriptor: project.toml
@@ -13,9 +13,9 @@ build:
             - cmd/add/main.go
             - internal/app/add/**
             - internal/pkg/**
-    - image: ghcr.io/cage1016/ms-sample-tictac
+    - image: ms-sample-tictac
       buildpacks:
-        builder: "gcr.io/buildpacks/builder:v1"
+        builder: gcr.io/buildpacks/builder:v1
         env:
           - GOOGLE_BUILDABLE=cmd/tictac/main.go
         projectDescriptor: project.toml

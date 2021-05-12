@@ -31,13 +31,13 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 
 1. Run ms-demo kubernetes cluster
     ```sh
-    skaffold run 
+    skaffold run --default-repo=<your-repo>
     ```
 
     or 
 
     ```sh
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/kubernetes-manifests-all.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/release/kubernetes-manifests-all.yaml
     ```
 
 ### LoadBalancer
@@ -45,7 +45,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 1. Apply LoadBalancer yaml
 
     ```bash
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/lb-all.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/release/lb-all.yaml
     ```
 
 1. We expose `add`, `tictac` service with TWO external service (LoadBalancer)
@@ -133,7 +133,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 
 1. Setup nginx ingress 
     ```
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/nginx-ingress-all.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/release/nginx-ingress-all.yaml
     ```
 
 1. Set up `ADD_NGINX_INGRESS_GRPC_URL` & `TICTAC_NGINX_INGRESS_GRPC_URL`
@@ -191,7 +191,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 2. Apply Istio manifests
 
     ```sh
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/istio-manifests-all.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/release/istio-manifests-all.yaml
     ```
 3. Set the `GATEWAY_HTTP_URL/GATEWAY_GRPC_URL` environment variable in your shell to the public IP/port of the Istio Ingress gateway.
     ```sh
@@ -237,7 +237,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 1. CleanUp Istio
 
     ```sh
-    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/istio-manifests-all.yaml
+    kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/release/istio-manifests-all.yaml
     ```
 
 ## Jaeger (Optional)
@@ -256,7 +256,7 @@ this demo support [Kubernetes service](.#kubernetes-service) or [nginx ingress](
 1. Setup Jaeger sample config 
 
     ```
-    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/with-sampling.yaml
+    kubectl apply -f https://raw.githubusercontent.com/cage1016/ms-demo/master/release/with-sampling.yaml
     ```
 
 1. patch `add` & `tictac` env to connect Jaeger agent
@@ -290,5 +290,5 @@ skaffold delete
 or 
 
 ```sh
-kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/deployments/kubernetes-manifests-all.yaml
+kubectl delete -f https://raw.githubusercontent.com/cage1016/ms-demo/master/release/kubernetes-manifests-all.yaml
 ```
