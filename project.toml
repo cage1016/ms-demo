@@ -1,28 +1,7 @@
-# [[build.env]]
-# optional, github token for private assets 
-# name = "TOKEN"
-# value = "<github-token>"
-
-# skaffold
-[[build.env]]
-# required
-name = "REPO"
-value = "grpc-ecosystem/grpc-health-probe"
-
-[[build.env]]
-# required
-name = "FILE"
-value = "grpc_health_probe-linux-amd64"
-
-[[build.env]]
-# optional, default set to FILE value
-name = "TARGET"
-value = "grpc_health_probe"
-
-# [[build.env]]
-# # optional, default set to 'latest'
-# name = "VERSION"
-# value = "v1.22.0"
+[[metadata.githubassets]]
+repo = "grpc-ecosystem/grpc-health-probe"
+asset = "grpc_health_probe-linux-amd64"
+destination = "bin/grpc_health_probe"
 
 [[build.buildpacks]]
 id = "google.go.runtime"
@@ -38,4 +17,4 @@ version = "0.0.1"
 
 [[build.buildpacks]]
 id = "cage1016/github-assets-cnb"
-version = "1.1.0"
+version = "2.1.1"

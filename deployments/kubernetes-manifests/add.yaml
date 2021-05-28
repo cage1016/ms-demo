@@ -12,7 +12,7 @@ spec:
       labels:
         app: add
     spec:
-      containers:        
+      containers:
         - name: add
           image: ms-sample-add
           env:
@@ -21,16 +21,16 @@ spec:
             - name: QS_HTTP_PORT
               value: "10020"
             - name: QS_LOG_LEVEL
-              value: "info"              
+              value: "info"
           ports:
             - containerPort: 10021
           readinessProbe:
             exec:
-              command: ["/layers/cage1016_github-assets-cnb/github-assets/bin/grpc_health_probe", "-addr=:10021"]
+              command: ["/layers/cage1016_github-assets-cnb/grpc-ecosystem_grpc-health-probe/bin/grpc_health_probe", "-addr=:10021"]
             initialDelaySeconds: 5
-          livenessProbe:           
+          livenessProbe:
             exec:
-              command: ["/layers/cage1016_github-assets-cnb/github-assets/bin/grpc_health_probe", "-addr=:10021"]
+              command: ["/layers/cage1016_github-assets-cnb/grpc-ecosystem_grpc-health-probe/bin/grpc_health_probe", "-addr=:10021"]
             initialDelaySeconds: 10
           resources:
             requests:

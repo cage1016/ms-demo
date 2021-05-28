@@ -84,11 +84,11 @@ spec:
           - containerPort: 10121
           readinessProbe:
             exec:
-              command: ["/layers/cage1016_github-assets-cnb/github-assets/bin/grpc_health_probe", "-addr=:10121"]
+              command: ["/layers/cage1016_github-assets-cnb/grpc-ecosystem_grpc-health-probe/bin/grpc_health_probe", "-addr=:10121"]
             initialDelaySeconds: 5
           livenessProbe:
             exec:
-              command: ["/layers/cage1016_github-assets-cnb/github-assets/bin/grpc_health_probe", "-addr=:10121"]
+              command: ["/layers/cage1016_github-assets-cnb/grpc-ecosystem_grpc-health-probe/bin/grpc_health_probe", "-addr=:10121"]
             initialDelaySeconds: 10
           resources:
             requests:
