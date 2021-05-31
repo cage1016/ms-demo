@@ -42,14 +42,17 @@ spec:
       containers:
         - image: postgres:9.6.3
           name: my-database
+          ports:
+          - containerPort: 5432
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "80Mi"
           envFrom:
           - configMapRef:
               name: ms-postgres-configuration
-          ports:
-          - containerPort: 5432
-          resources: {}
           volumeMounts:
-          - mountPath: "/var/lib/postgresql/data"
+          - mountPath: /var/lib/postgresql/data
             name: ms-postgresdb-storage
         - name: tictac
           image: ms-sample-tictac
@@ -92,7 +95,7 @@ spec:
             initialDelaySeconds: 10
           resources:
             requests:
-              cpu: 0            
+              cpu: 0
 ---
 kind: Service
 apiVersion: v1
