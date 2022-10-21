@@ -5,15 +5,12 @@ destination = "bin/grpc_health_probe"
 
 [[build.buildpacks]]
 id = "google.go.runtime"
-version = "0.9.1"
 
 [[build.buildpacks]]
 id = "google.go.build"
-version = "0.9.0"
 
 [[build.buildpacks]]
 id = "google.utils.label"
-version = "0.0.1"
 
 [[build.buildpacks]]
 id = "cage1016/github-assets-cnb"
